@@ -1,0 +1,98 @@
+  openapi: 3.0.1
+  info:
+    title: URL Shortener - API
+    description: Encurta a url e persiste em banco de dados, busca urls encurtadas anteriormente por data e por id, e redireciona da url encurtada para a url longa.
+    version: 1.0.0
+  tags:
+    - name: "API endpoints"
+      description: "Operações permitidas"
+  paths:
+    /urls:
+      post:
+        tags:
+          - "API endpoints"
+        summary: "Encurta a url"
+        description: "Cria valor encurtado para a url informada e persiste ao banco de dados"
+        operationId: "shortenUrl"
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  longUrl:
+                    type: string
+              example:
+                longUrl: https://www.example.com
+        responses:
+          "201":
+            description: "Registro criado com sucesso"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  $ref: "#/definitions/URL"
+          "400":
+            description: "URL fornecida inválida"
+    /url/{id}:
+      get:
+        tags:
+          - "API endpoints"
+        summary: "Retorna URL ao buscar pelo ID"
+        description: "Retorna apenas uma url"
+        operationId: "getById"
+        parameters:
+          - name: "id"
+            in: "path"
+            description: "ID da url a ser retornada"
+            required: true
+        responses:
+          "200":
+            description: "Registro de url retornado com sucesso"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/definitions/URL"
+          "404":
+            description: "URL não encontrada"
+    /urls?date={urlDate}:
+      get:
+        tags:
+          - "API endpoints"
+        summary: "Encontra urls pela data de criação"
+        description: "Retorna todas as url da mesma data"
+        operationId: "getByDate"
+        parameters:
+          - name: "urlDate"
+            in: "path"
+            description: "A data precisa ser inserida no formato aaaa-mm-dd"
+            required: true
+        responses:
+          "200":
+            description: "Registros de url retornados com sucesso"
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/definitions/URL"
+          "404":
+            description: "Registros não encontrados"
+  definitions:
+    URL:
+      type: "object"
+      properties:
+        _id:
+          type: "string"
+        urlCode:
+          type: "string"
+        longUrl:
+          type: "string"
+          description: "URL original"
+        shortUrl:
+          type: "string"
+          description: "URL encurtada"
+        date:
+          type: "string"
+          format: "date"

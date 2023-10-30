@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+
+  url-shortener:
+    build:
+      context: .
+    container_name: url-shortener
+    entrypoint: wait-for-it.sh url-shortener-db:27017 -t 30 -- npm run dev
+    networks:
+      - url-shortener-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "8088:8080"
+    tty: true
+    restart: always
+    depends_on:
+      - url-shortener-db
+
+  url-shortener-db:
+    image: mongo
+    restart: always
+    container_name: url-shortener-db
+    ports:
+      - "27077:27017"
+    networks:
+      - url-shortener-network
+    volumes:
+      - url-db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+
+volumes:
+  url-db:
+
+networks:
+  url-shortener-network:
+    name: url-shortener-network
+    driver: bridge

@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+
+  url-shortener:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: url-shortener
+    entrypoint: wait-for-it.sh url-shortener-db:27017 -t 30 -- npm start
+    networks:
+      - nginx-proxy-manager_default
+    volumes:
+      - .:/app
+      - /app/node_modules
+    tty: true
+    restart: always
+    depends_on:
+      - url-shortener-db
+
+  url-shortener-db:
+    image: mongo
+    restart: always
+    container_name: url-shortener-db
+    networks:
+      - nginx-proxy-manager_default
+    volumes:
+      - url-db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+
+volumes:
+  url-db:
+
+networks:
+  nginx-proxy-manager_default:
+    external: true
